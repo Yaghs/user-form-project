@@ -1,5 +1,6 @@
 // component for the notifications
 //they only send an alert
+//<button onClick={HandleHospitalNotifications}>X</button>
 export function HospitalContacts() {
     function HandleHospitalNotifications() {
       return alert("Hospital Notified");
@@ -7,7 +8,7 @@ export function HospitalContacts() {
     return (
       <div>
         <p>Hospital Contacts</p>
-        <button onClick={HandleHospitalNotifications}>X</button>
+        <input type="checkbox" onChange={HandleHospitalNotifications} />
       </div>
     );
   }
@@ -19,7 +20,7 @@ export function HospitalContacts() {
     return (
       <div>
         <p>Company Contacts</p>
-        <button onClick={HandleComapnyContacts}>X</button>
+        <input type="checkbox" onChange={HandleComapnyContacts} />
       </div>
     );
   }
@@ -31,7 +32,7 @@ export function HospitalContacts() {
     return (
       <div>
         <p>Restock</p>
-        <button onClick={HandleRestockNotifications}>X</button>
+        <input type="checkbox" onChange={HandleRestockNotifications} />
       </div>
     );
   }
