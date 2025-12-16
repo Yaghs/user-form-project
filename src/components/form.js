@@ -10,16 +10,21 @@ import {
     CompanyContacts,
     Restock,
   } from "./form-components/notifications-emails";
-  
+  import formSubmit from "../api/formSubmit";
   import { Modal } from "./form-components/loading";
-  
+  import Success from "./success";
+  import Error from "./Error";
   //imports useState and useRef
   import { useState } from "react";
-  
-  export default function Form() {
-    //initializes the state with default values
+  export default function SaveCaseForm() {
+   //initializes the state with default values
     const [billsheets, setBillSheets] = useState([]);
-    const [showModal, setShowModal] = useState(false);
+    const [showLoadingState, setShowLoadingState] = useState(false);
+    const [responseData, setResponseData] = useState(null);
+    const [errorData, setErrorData] = useState(null);
+    const [showSuccessState, setShowSuccessState] = useState(false);
+    const [showSummaryState, setShowSummaryState] = useState(false);
+    const [showErrorState, setShowErrorState] = useState(true);
     const [formData, setFormData] = useState({
       surgeryDate: new Date().toISOString().split("T")[0],
       patientName: "",
@@ -32,6 +37,7 @@ import {
   
     //event handler for typing the values using id, name and value as arguments
     function handleBillsheetChange(id, name, value) {
+  
       // calls the setter
       setBillSheets(
         //iterates through the billsheets list and creates a new copy
@@ -81,6 +87,14 @@ import {
       //decrements the index count
       setNextID(nextId - 1);
     }
+    const handleErrorState = () => {
+      handleOpenLoadingState();
+      setShowErrorState(true);
+      handleCloseLoadingState();
+      // stay on the form page
+      return;
+    }
+
     // stores the new data as a state
     function handleFormChange(e) {
       setFormData({
@@ -88,19 +102,169 @@ import {
         [e.target.name]: e.target.value,
       });
     }
-  
     //event handler for the save case button
     function handleSaveClick() {
-      setShowSummary(true);
+      console.log("save case button clicked");
+      handleOpenLoadingState();
+      //TODO: add the logic to submit the form data to the API
+      const formDataToSubmit = {
+        ...formData,
+        billsheets: billsheets
+      };
+
+      formSubmit(formDataToSubmit).then((response) => {
+        console.log("response received");
+        setResponseData(response);
+        setShowSuccessState(true);
+        setShowLoadingState(false);
+        setShowErrorState(false);
+        setErrorData(null);
+      }).catch((error) => {
+        setErrorData(error);
+        handleErrorState();
+        return;
+      });
     }
     
-    const handleOpenModal = () => {
+    const handleOpenLoadingState = () => {
       console.log("modal opened");
-      setShowModal(true);
+      setShowLoadingState(true);
     }
-    const handleCloseModal = () => {
+    const handleCloseLoadingState = () => {
       console.log("modal closed");
-      setShowModal(false);
+      setShowLoadingState(false);
+    }
+
+
+    if(responseData !== null) {
+      return(
+        <Success responseData={responseData} />
+      )
+    }
+    else {
+        return (
+          <div className="App">
+            <button type="button" onClick={handleBillsheetClick}>
+              Add bill sheets here
+            </button>
+            <button type="button">
+              Mock extractions{" "}
+            </button>
+            {billsheets.map((billsheet) => (
+              <fieldset key={billsheet.id}>
+                <form>
+                  {billsheet.file && (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      <img
+                        src={URL.createObjectURL(billsheet.file)}
+                        alt={billsheet.file.name}
+                        style={{
+                          width: "50px",
+                          height: "50px",
+                          objectFit: "cover",
+                          marginRight: "8px",
+                        }}
+                      />
+                      <span>{billsheet.file.name}</span>
+                    </div>
+                  )}
+      
+                  <CompanyDropdown
+                    name="company"
+                    value={billsheet.company}
+                    onChange={(e) =>
+                      handleBillsheetChange(
+                        billsheet.id,
+                        e.target.name,
+                        e.target.value
+                      )
+                    }
+                  />
+                  <label>amount</label>
+                  <input
+                    type="number"
+                    name="amount"
+                    value={billsheet.amount}
+                    onChange={(e) =>
+                      handleBillsheetChange(
+                        billsheet.id,
+                        e.target.name,
+                        e.target.value
+                      )
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => RemoveBillsheetClick(billsheet.id)}
+                  >
+                    remove billsheet
+                  </button>
+                </form>
+              </fieldset>
+            ))}
+            <fieldset>
+              <label>Date of surgery</label>
+              <input
+                type="date"
+                name="surgeryDate"
+                value={formData.surgeryDate}
+                onChange={handleFormChange}
+              ></input>
+              <HospitalDropDown
+                name="hospital"
+                value={formData.hospital}
+                onChange={handleFormChange}
+              />
+              <label>Patient Name</label>
+              <input
+                name="patientName"
+                value={formData.patientName}
+                onChange={handleFormChange}
+              ></input>
+              <br />
+              <label>Rep Notes</label>
+              <input
+                name="repNotes"
+                value={formData.repNotes}
+                onChange={handleFormChange}
+              ></input>
+            </fieldset>
+      
+            <fieldset>
+              <PhysicianDropDown
+                name="physician"
+                value={formData.physician}
+                onChange={handleFormChange}
+              />
+              <fieldset>
+                <label>Notification emails</label>
+                <HospitalContacts />
+                <CompanyContacts />
+              </fieldset>
+              <fieldset>
+                <Restock />
+              </fieldset>
+              <button onClick={handleSaveClick}>Save Case</button>
+              <Modal isOpen={showLoadingState} onClose={handleCloseLoadingState}>
+                {showErrorState ? (<Error />) : 
+                (
+                   <div>
+                    <h2>loading...</h2>
+                    <p>please wait while we process your request...</p>
+                   </div>
+                )}
+              </Modal>
+              <button>discard</button>
+            </fieldset>
+          </div>
+        );
+      }
     }
     // if the condition inside the setShowSummary state is true
     //return the following:
@@ -130,122 +294,4 @@ import {
       );
     }
       **/
-    //returns the JSX
-    return (
-      <div className="App">
-        <button type="button" onClick={handleBillsheetClick}>
-          Add bill sheets here
-        </button>
-        <button type="button">
-          Mock extractions{" "}
-        </button>
-        {billsheets.map((billsheet) => (
-          <fieldset key={billsheet.id}>
-            <form>
-              {billsheet.file && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <img
-                    src={URL.createObjectURL(billsheet.file)}
-                    alt={billsheet.file.name}
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      objectFit: "cover",
-                      marginRight: "8px",
-                    }}
-                  />
-                  <span>{billsheet.file.name}</span>
-                </div>
-              )}
   
-              <CompanyDropdown
-                name="company"
-                value={billsheet.company}
-                onChange={(e) =>
-                  handleBillsheetChange(
-                    billsheet.id,
-                    e.target.name,
-                    e.target.value
-                  )
-                }
-              />
-              <label>amount</label>
-              <input
-                type="number"
-                name="amount"
-                value={billsheet.amount}
-                onChange={(e) =>
-                  handleBillsheetChange(
-                    billsheet.id,
-                    e.target.name,
-                    e.target.value
-                  )
-                }
-              />
-              <button
-                type="button"
-                onClick={() => RemoveBillsheetClick(billsheet.id)}
-              >
-                remove billsheet
-              </button>
-            </form>
-          </fieldset>
-        ))}
-        <fieldset>
-          <label>Date of surgery</label>
-          <input
-            type="date"
-            name="surgeryDate"
-            value={formData.surgeryDate}
-            onChange={handleFormChange}
-          ></input>
-          <HospitalDropDown
-            name="hospital"
-            value={formData.hospital}
-            onChange={handleFormChange}
-          />
-          <label>Patient Name</label>
-          <input
-            name="patientName"
-            value={formData.patientName}
-            onChange={handleFormChange}
-          ></input>
-          <br />
-          <label>Rep Notes</label>
-          <input
-            name="repNotes"
-            value={formData.repNotes}
-            onChange={handleFormChange}
-          ></input>
-        </fieldset>
-  
-        <fieldset>
-          <PhysicianDropDown
-            name="physician"
-            value={formData.physician}
-            onChange={handleFormChange}
-          />
-          <fieldset>
-            <label>Notification emails</label>
-            <HospitalContacts />
-            <CompanyContacts />
-          </fieldset>
-          <fieldset>
-            <Restock />
-          </fieldset>
-          <button onClick={handleOpenModal}>Save Case</button>
-          <Modal isOpen={showModal} onClose={handleCloseModal}>
-            <h2>loading...</h2>
-            <p>please wait while we process your request...</p>
-          </Modal>
-          <button>discard</button>
-        </fieldset>
-      </div>
-    );
-  }

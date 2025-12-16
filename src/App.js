@@ -1,11 +1,11 @@
 
 import './App.css';
-import Form from './components/form';
+import SaveCaseForm from './components/form';
 function App() {
   return (
     <div className="App">
         <h1>User Form</h1>
-        <Form />
+        <SaveCaseForm />
     </div>
   );
 }
