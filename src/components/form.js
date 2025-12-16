@@ -11,7 +11,7 @@ import {
     Restock,
   } from "./form-components/notifications-emails";
   
-  
+  import { Modal } from "./form-components/loading";
   
   //imports useState and useRef
   import { useState } from "react";
@@ -19,6 +19,7 @@ import {
   export default function Form() {
     //initializes the state with default values
     const [billsheets, setBillSheets] = useState([]);
+    const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({
       surgeryDate: new Date().toISOString().split("T")[0],
       patientName: "",
@@ -92,12 +93,21 @@ import {
     function handleSaveClick() {
       setShowSummary(true);
     }
+    
+    const handleOpenModal = () => {
+      console.log("modal opened");
+      setShowModal(true);
+    }
+    const handleCloseModal = () => {
+      console.log("modal closed");
+      setShowModal(false);
+    }
     // if the condition inside the setShowSummary state is true
     //return the following:
   
     // the list values for the individual billsheets (uses the .map tool)
     //the case wide values for the case
-    if (showSummary) {
+    /*if (showSummary) {
       return (
         <div>
           <h2>case summary</h2>{" "}
@@ -119,6 +129,7 @@ import {
         </div>
       );
     }
+      **/
     //returns the JSX
     return (
       <div className="App">
@@ -228,7 +239,11 @@ import {
           <fieldset>
             <Restock />
           </fieldset>
-          <button onClick={handleSaveClick}>Save Case</button>
+          <button onClick={handleOpenModal}>Save Case</button>
+          <Modal isOpen={showModal} onClose={handleCloseModal}>
+            <h2>loading...</h2>
+            <p>please wait while we process your request...</p>
+          </Modal>
           <button>discard</button>
         </fieldset>
       </div>
