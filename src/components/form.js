@@ -24,7 +24,7 @@ import {
     const [errorData, setErrorData] = useState(null);
     const [showSuccessState, setShowSuccessState] = useState(false);
     const [showSummaryState, setShowSummaryState] = useState(false);
-    const [showErrorState, setShowErrorState] = useState(true);
+    const [showErrorState, setShowErrorState] = useState(false);
     const [formData, setFormData] = useState({
       surgeryDate: new Date().toISOString().split("T")[0],
       patientName: "",
