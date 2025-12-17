@@ -1,5 +1,4 @@
 export const CompanyDataOptions = [
-    {id: 1, name: "HRH"},
     {id: 2, name: "Corex"},
     {id: 3, name: "4Web"},
     {id: 4, name: "axial"},
@@ -13,7 +12,8 @@ export const HospitalDataOptions = [
     {id: 3, name: "Hackensack"},
     {id: 4, name: "Mercy med center"},
     {id: 5, name: "Carewell"},
-    {id: 6, name: "Good samaritan"}
+    {id: 6, name: "Good samaritan"},
+    {id: 7, name: "HRH"}
 ]
 
 export const PhysicianDataOptions = [

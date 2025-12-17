@@ -14,6 +14,7 @@ import {
   import { Modal } from "./form-components/loading";
   import Success from "./success";
   import Error from "./Error";
+  import AIExtractionMock from "../api/formSubmitApiMock";
   //imports useState and useRef
   import { useState } from "react";
   export default function SaveCaseForm() {
@@ -102,6 +103,35 @@ import {
         [e.target.name]: e.target.value,
       });
     }
+    //event handler for the mock extractions button
+    async function handleMockExtractionsClick() {
+      console.log("mock extractions button clicked");
+      //call the mock API
+      try {
+        const response = await AIExtractionMock();
+        console.log("response received:", response);
+
+        if(response.success) {
+          setBillSheets(currentBillsheets => currentBillsheets.map(billsheet => ({
+            ...billsheet,
+            company: response.data.company,
+            amount: response.data.amount,
+          })))
+          setFormData({
+            ...formData,
+            patientName: response.data.patientName,
+            hospital: response.data.hospital,
+            physician: response.data.physician,
+            repNotes: response.data.notes,
+          })
+        }
+      } catch (error) {
+        console.error("error receiving response", error);
+        handleErrorState();
+        return;
+      }
+    }
+      //We pass a dummy file object to the response
     //event handler for the save case button
     function handleSaveClick() {
       console.log("save case button clicked");
@@ -147,7 +177,7 @@ import {
             <button type="button" onClick={handleBillsheetClick}>
               Add bill sheets here
             </button>
-            <button type="button">
+            <button type="button" onClick={handleMockExtractionsClick}>
               Mock extractions{" "}
             </button>
             {billsheets.map((billsheet) => (
