@@ -17,6 +17,7 @@ import {
   import AIExtractionMock from "../api/formSubmitApiMock";
   //imports useState and useRef
   import { useState } from "react";
+  import { useDropzone } from "react-dropzone";
   export default function SaveCaseForm() {
    //initializes the state with default values
     const [billsheets, setBillSheets] = useState([]);
@@ -35,7 +36,6 @@ import {
     });
     const [nextId, setNextID] = useState(0);
     const [showSummary, setShowSummary] = useState(false);
-  
     //event handler for typing the values using id, name and value as arguments
     function handleBillsheetChange(id, name, value) {
   
@@ -53,33 +53,26 @@ import {
         })
       );
     }
-    //event handler for creating new billsheets for the case
-    function handleBillsheetClick() {
-      //initializes the variables for the image
-      const input = document.createElement("input");
-      input.type = "file";
-      input.multiple = true;
-      input.accept = "image/*";
-  
-      //handles the upload by creating a new list with default values
-      input.onchange = (e) => {
-        const files = [...e.target.files];
-  
-        const newBillsheets = files.map((file, index) => ({
-          id: nextId + index,
-          company: "",
-          amount: "",
-          file: file,
-        }));
-        //calls the state setter for billsheets and ID to
-        //store the new copy of the arrays as a snapshot
-        //increment the index counter for the new billsheets
-        setBillSheets([...billsheets, ...newBillsheets]);
-        setNextID(nextId + files.length);
-      };
-  
-      input.click();
+    //uses the useDropzone hook to handle the drag and drop functionality
+    const onDrop = (acceptedFiles) => {
+      //logs the accepted files to the console
+      console.log("acceptedFiles", acceptedFiles);
+      //creates a new array of billsheets with the accepted files
+      const newBillsheets = acceptedFiles.map((file, index) => ({
+        //ensures unique ids for each billsheet
+        id: nextId + index,
+        company: "",
+        amount: "",
+        file: file,
+      }));
+      //sets the new billsheets to the state
+      setBillSheets([...billsheets, ...newBillsheets]);
+      //increments the next ID by the length of the new billsheets
+      setNextID(nextId + newBillsheets.length);
     }
+    //uses the useDropzone hook to handle the drag and drop functionality
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: { "image/*": [".jpg", ".jpeg", ".png"] } });
+   
     //handles removing a billsheet from a case
     function RemoveBillsheetClick(id) {
       console.log("goodbye");
@@ -174,12 +167,26 @@ import {
     else {
         return (
           <div className="App">
-            <button type="button" onClick={handleBillsheetClick}>
-              Add bill sheets here
-            </button>
+            {/** mock extractions button */}
             <button type="button" onClick={handleMockExtractionsClick}>
               Mock extractions{" "}
             </button>
+            {/** drag and drop area */}
+            <div {...getRootProps()} style={{
+              border: "2px dashed #ccc",
+              borderRadius: "5px",
+              padding: "20px",
+              textAlign: "center",
+              cursor: "pointer",
+              backgroundColor: isDragActive ? "#f0f0f0" : "white",
+              marginBottom: "10px",
+            }}>
+              {/** drag and drop input */}
+              <input {...getInputProps()} />
+              {/** drag and drop text */}
+              <p style={{ marginTop: "0" }}>Drag and drop files here, or click to select files</p>
+            </div>
+            {/** billsheets list */}
             {billsheets.map((billsheet) => (
               <fieldset key={billsheet.id}>
                 <form>
